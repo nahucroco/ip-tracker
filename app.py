@@ -32,18 +32,17 @@ with app.app_context():
 @app.route("/")
 def inicio():
 
-    ip = request.headers.get(
-        "X-Forwarded-For",
-        request.remote_addr
-    )
+    forwarded_for = request.headers.get("X-Forwarded-For")
 
-    if "," in ip:
-        ip = ip.split(",")[0].strip()
+    if forwarded_for:
+        ip = forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.remote_addr
 
     visita = Visita(
         fecha=datetime.now().isoformat(),
         ip=ip,
-        user_agent=request.headers.get("User-Agent")
+        user_agent=request.headers.get("User-Agent"),
     )
 
     db.session.add(visita)
@@ -54,19 +53,16 @@ def inicio():
     <p>Puedes cerrar esta página.</p>
     """
 
+
 @app.route("/visitas")
 def visitas():
 
     registros = Visita.query.order_by(Visita.id.desc()).all()
 
     return [
-        {
-            "fecha": r.fecha,
-            "ip": r.ip,
-            "user_agent": r.user_agent
-        }
-        for r in registros
+        {"fecha": r.fecha, "ip": r.ip, "user_agent": r.user_agent} for r in registros
     ]
+
 
 if __name__ == "__main__":
     app.run(debug=True)
