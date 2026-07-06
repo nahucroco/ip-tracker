@@ -61,13 +61,19 @@ def inicio():
     geo = {}
 
     try:
+        respuesta = requests.get(
+            f"https://ipwho.is/{ip}",
+            timeout=5,
+            headers={"User-Agent": "ip-tracker/1.0"},
+        )
 
-        respuesta = requests.get(f"https://ipwho.is/{ip}", timeout=5)
+        print("Status:", respuesta.status_code)
+        print("Respuesta:", respuesta.text)
 
         geo = respuesta.json()
 
-    except Exception:
-
+    except Exception as e:
+        print("ERROR:", e)
         geo = {}
 
     visita = Visita(
